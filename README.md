@@ -1,17 +1,17 @@
-<p align="center"><img src="apps/kurdbimmer_themes/icon.png" width="120" alt="KurdBimmer icon"></p>
+<p align="center"><img src="apps/ix3_themes/icon.png" width="120" alt="iX3 Themes icon"></p>
 
-<h1 align="center">KurdBimmer Themes</h1>
+<h1 align="center">iX3 Themes</h1>
 
 <p align="center">
 Seventeen full-screen instrument cluster themes for BMW iDrive 7 (MGU), with a Kurdish (Sorani) interface.<br>
-Made by <a href="https://github.com/FDX100">FDX100</a>.
+Based on the work of <a href="https://github.com/FDX100">FDX100</a>.
 </p>
 
-> **Every theme and feature here is tested on a BMW G20 with iDrive 7 (ID7)**, by the author, on his own car. Other models with an iDrive 7 head unit should work the same way, but they are not tested. Install at your own risk, as with any non-BMW app on a head unit.
+> **The themes were made and tested by the original author on a BMW G20 with iDrive 7 (ID7).** This version is being adapted for a BMW iX3 (see below); a theme that has not been tried on the iX3 may not run there. Install at your own risk, as with any non-BMW app on a head unit.
 
 ## This fork (BMW iX3)
 
-A fork of [FDX100/KB](https://github.com/FDX100/KB) for a BMW iX3 (iDrive 7). Themes with a big one-off shader (Alpina, Concept, Live Cockpit) restarted the iX3's head unit, so they are being cut down here one by one; Apex runs.
+A fork of [FDX100's themes](https://github.com/FDX100/KB) for a BMW iX3 (iDrive 7). Themes with a big one-off shader (Alpina, Concept, Live Cockpit) restarted the iX3's head unit, so they are being cut down here one by one; Apex runs.
 
 - **Concept** now draws each gauge as three small shader layers (the line with the swoosh, the glass panel, the little fuel / coolant gauge) instead of one big one: at most 53 uniform vectors in a shader, not 118. It looks the same on the bench (largest pixel difference 19 of 255); only the car shows whether the iX3 takes it.
 - **Concept: match the ambient light colour** (Settings tab, off by default): the gauges' blues take the colour of the car's ambient light, read now and then from the body controller (read-only requests). The amber swoosh stays amber.
@@ -47,10 +47,10 @@ You need a BMW iDrive 7 head unit with the [MGU Store](https://github.com/robert
 
 ### From GitHub (online)
 
-1. In the MGU Store open **Settings → Add source** and type **`FDX100/KB`** (or the link `https://github.com/FDX100/KB`). When it asks what to follow, pick the **main** branch.
+1. In the MGU Store open **Settings → Add source** and type **`c3ms3n/ix3`** (or the link `https://github.com/c3ms3n/ix3`). When it asks what to follow, pick the **main** branch.
 2. Install **cluster-render** first if it is not on the car yet (from [robertnisipeanu/idrive-apps](https://github.com/robertnisipeanu/idrive-apps)).
-3. Install **KurdBimmer Themes**. The Store builds it on the car from this repository (`mgu-repo.json`), and updates it when the version in `app.json` goes up.
-4. Open **KurdBimmer Themes** from the apps menu on the center screen and pick a theme on the Themes tab.
+3. Install **iX3 Themes**. The Store builds it on the car from this repository (`mgu-repo.json`), and updates it when the version in `app.json` goes up.
+4. Open **iX3 Themes** from the apps menu on the center screen and pick a theme on the Themes tab.
 
 ### From a USB stick (offline)
 
@@ -58,14 +58,14 @@ On a computer with Node 18 or newer, using the Store's installer:
 
 ```sh
 git clone https://github.com/robertnisipeanu/mgu-store
-git clone https://github.com/FDX100/KB
+git clone https://github.com/c3ms3n/ix3
 cd mgu-store
-node deploy/mgu-install.js usb-repo <stick> ../KB
+node deploy/mgu-install.js usb-repo <stick> ../ix3
 # optional: put cluster-render on the same stick
 node deploy/mgu-install.js usb-repo <stick> github:robertnisipeanu/idrive-apps
 ```
 
-`<stick>` is the stick's mount point (`E:\` on Windows, `/run/media/<you>/USB` on Linux). In the car open **MGU Store, USB** and install cluster-render, then KurdBimmer Themes. Copying files onto the stick by hand does not work; the stick must be written by `usb-repo`.
+`<stick>` is the stick's mount point (`E:\` on Windows, `/run/media/<you>/USB` on Linux). In the car open **MGU Store, USB** and install cluster-render, then iX3 Themes. Copying files onto the stick by hand does not work; the stick must be written by `usb-repo`.
 
 ## Using it
 
@@ -101,23 +101,23 @@ Transparent PNG, any size up to 4096 px, 8 or 16 bit, not interlaced; it is scal
 ./scripts/logos.sh root@<car-ip> bmw.png m.png i.png alpina.png
 ```
 
-The app looks at the folder every few seconds, so no restart is needed. **Badge style** picks *Logo beside the text* (the default), *Logo only* or *Text only*; where a theme's spot is too narrow for both, the logo shows alone. `tools/logo_png.sh Mlogo.eps logos/m.png` turns an EPS (or PDF, SVG) you have into the PNG. On the bench, put the files in `bench/.data/kurdbimmer_themes/logos/`. The `logos/` folders are git-ignored, so the pictures are never committed. A theme made with `tools/gen_*.py` gets its badge from `tools/badge_spot.py` (one line in each generator): add a spot there for a new theme.
+The app looks at the folder every few seconds, so no restart is needed. **Badge style** picks *Logo beside the text* (the default), *Logo only* or *Text only*; where a theme's spot is too narrow for both, the logo shows alone. `tools/logo_png.sh Mlogo.eps logos/m.png` turns an EPS (or PDF, SVG) you have into the PNG. On the bench, put the files in `bench/.data/ix3_themes/logos/`. The `logos/` folders are git-ignored, so the pictures are never committed. A theme made with `tools/gen_*.py` gets its badge from `tools/badge_spot.py` (one line in each generator): add a spot there for a new theme.
 
 ## Try it without a car
 
 ```sh
-node bench/server.js kurdbimmer_themes     # then open http://localhost:8078
+node bench/server.js ix3_themes     # then open http://localhost:8078
 ```
 
 The bench draws the cluster and the center-screen page with simulated car data. Pick a theme on the Themes tab. Saving a layout or `shared/` file rebuilds and reloads it. See `bench/README.md`.
 
 ## Make your own theme
 
-1. Write `tools/gen_<name>.py` (copy `tools/gen_apex.py`) that writes `apps/kurdbimmer_themes/hud/layouts/<name>.json`. The widget types are listed at the top of `shared/hud.js`.
+1. Write `tools/gen_<name>.py` (copy `tools/gen_apex.py`) that writes `apps/ix3_themes/hud/layouts/<name>.json`. The widget types are listed at the top of `shared/hud.js`.
 2. Add a palette to `shared/hud_themes.js` (copy the `apex` entry).
-3. Add `["<name>", "<Title>"]` to the four theme lists in `apps/kurdbimmer_themes/app.json` (`hudLayout`, `inComfort`, `inSport`, `inEco`), and a caption to `tags` in `apps/kurdbimmer_themes/main.js`.
+3. Add `["<name>", "<Title>"]` to the four theme lists in `apps/ix3_themes/app.json` (`hudLayout`, `inComfort`, `inSport`, `inEco`), and a caption to `tags` in `apps/ix3_themes/main.js`.
 4. Check it in the bench. The cluster draws at most 8 layers per connection; give widgets `"conn": 2` or `3` when a layout needs more.
-5. Make its picture: `python3 tools/previews_kb.py kurdbimmer_themes 8078`.
+5. Make its picture: `python3 tools/previews_cluster.py ix3_themes 8078`.
 
 More in `docs/DEVELOPING.md`.
 
@@ -131,16 +131,16 @@ More in `docs/DEVELOPING.md`.
 ## Build
 
 ```sh
-python3 kit/tools/build.py kurdbimmer_themes     # writes dist/kurdbimmer_themes@<version>.mgu and .tgz
+python3 kit/tools/build.py ix3_themes     # writes dist/ix3_themes@<version>.mgu and .tgz
 ```
 
 The build needs the BMW `oap-sdk`, which the Store makes on the car. In this repository `oap-sdk/` is a stub for the bench, so those files are for testing only; do not copy them to a car.
 
 ## Credits and licence
 
-- Made by **FDX100**, https://github.com/FDX100.
+- Based on the themes and the app by **FDX100**, https://github.com/FDX100 (the original is https://github.com/FDX100/KB); this fork adapts them for the BMW iX3.
 - Built on [bimmer-lab/apps](https://github.com/bimmer-lab/apps) (Cluster Themes, MIT) and cauliflowermossgrape's [MGU App Kit](https://github.com/cauliflowermossgrape/idrive7-apps) (MIT). Every original bimmer-lab theme has been removed; only the themes made here remain.
 - Cluster drawing by [cluster-render](https://github.com/robertnisipeanu/idrive-apps) and the [MGU Store](https://github.com/robertnisipeanu/mgu-store) by robertnisipeanu.
-- Fonts: Barlow, Orbitron, Outfit and Noto Sans Arabic, all SIL OFL. See `apps/kurdbimmer_themes/NOTICE`.
+- Fonts: Barlow, Orbitron, Outfit and Noto Sans Arabic, all SIL OFL. See `apps/ix3_themes/NOTICE`.
 - Some themes were drawn after photos of real clusters. They are original drawings, not BMW or Alpina artwork. BMW, M and Alpina are trademarks of their owners; this project is not affiliated with them.
 - MIT licence, see `LICENSE`.

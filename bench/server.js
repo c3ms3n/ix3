@@ -4,7 +4,7 @@
  *
  *   node bench/server.js [app_id]   then open http://localhost:8078
  *
- * app_id: idrive_hud_widgets (the default, the 800x480 HUD) or kurdbimmer_themes (the 1920x720 cluster).
+ * app_id: idrive_hud_widgets (the default, the 800x480 HUD) or ix3_themes (the 1920x720 cluster).
  * The page draws the target the app's app.json config.target names.
  * The service's limits are modelled: 8 layers per connection (BENCH_LAYER_CAP=8; off by default), 32 across every
  * connection and 16 MiB of pixel memory with each image counted twice (both always on; see bench/README.md).

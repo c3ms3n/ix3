@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/mdigital.json (the M Digital theme), after a product image of an aftermarket digital
+"""Generates apps/ix3_themes/hud/layouts/mdigital.json (the M Digital theme), after a product image of an aftermarket digital
 M cluster (apps/9, a 600 px image: the numbers and shapes are read off a 8x enlargement, so this is the same layout, not a
 tracing): two tall curved rev bands (0..8) round a centre column with the big speed over a divider and the gear under it, the M
 stripe on top, a rounded panel on each side (left: the driver-assist panel, which becomes the Waze map window while the map shows;
@@ -7,8 +7,8 @@ right: a trip list), a small fuel gauge far left and a small temperature gauge f
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'mdigital.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'mdigital.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 S = 0.68                       # the enlarged crop's px -> layout px
 AX = 680.0                     # the crop's mirror axis x
 CY = 470.0                     # the crop's middle y

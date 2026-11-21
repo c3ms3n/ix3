@@ -31,9 +31,9 @@ const ckb = require('./ckb');
 const W = 1600, H = 520;
 const A = G.withAlpha;
 const C = {
-    // KurdBimmer: dark with the Kurdish flag's colours: green for what is on, red and gold accents
-    bg: '#07060a', glow: '#1c0a10', text: '#f2f0ee', dim: '#9a9098', label: '#7c727a', line: '#ffffff12',
-    blue: '#2a9a4c', blueHi: '#5ccc7e', blueDeep: '#1b6b33', live: '#fbd116', off: '#c8c2c6', red: '#ed1c24', gold: '#fbd116',
+    // iX3 Themes: dark, blue for what is on, amber and red accents (the app's icon: white line, amber swoosh)
+    bg: '#05080d', glow: '#0a1830', text: '#eef2f7', dim: '#8f9aa8', label: '#6f7a88', line: '#ffffff12',
+    blue: '#2a8cff', blueHi: '#6cb4ff', blueDeep: '#1b5fb3', live: '#ffb300', off: '#c4cbd4', red: '#ed1c24', gold: '#ffb300',
 };
 const RAIL = { x: 16, y: 54, w: 252, h: 66, gap: 8 };
 const RAIL7 = { x: 16, y: 54, w: 252, h: 58, gap: 6 };     // seven tabs or more: a little shorter, so they fit
@@ -150,16 +150,15 @@ class Page {
         const bottom = G.pageBottom(cv);
         const h = bottom + 8;
         cv.clear(C.bg);
-        cv.gradientRect(0, 0, W, h, [[0, C.glow], [0.55, '#0a0709'], [1, C.bg]]);
+        cv.gradientRect(0, 0, W, h, [[0, C.glow], [0.55, '#070a0f'], [1, C.bg]]);
         const on = this.hud.activeName && this.hud.activeName !== 'off';
         const dd = this.hud.car && this.hud.car.data(), demo = dd && dd.demo;
         G.frame(cv, this.theme(), [], -1, [
             demo ? { text: dd.demoShow ? 'DEMO' : 'DEMO DATA', color: '#ffb020' } : null,
             { text: on ? 'ON THE ' + this.cfg.what.toUpperCase() : this.cfg.what.toUpperCase() + ' OFF', color: on ? '#3ddc84' : C.dim },
         ]);
-        // the flag's three stripes (red, white, green) along the very top (over the header), a gold sun at the right end
-        cv.fillRect(0, 0, W, 3, C.red); cv.fillRect(0, 3, W, 3, '#f2f0ee'); cv.fillRect(0, 6, W, 3, '#278e43');
-        cv.circle(W - 22, 5, 6, C.gold);
+        // an amber and a blue line along the very top (over the header)
+        cv.fillRect(0, 0, W, 3, C.gold); cv.fillRect(0, 3, W, 3, C.blue);
         if (this.cfg.title) cv.text(this.cfg.title, 18, 27, 18, C.gold, { font: 'bold', literal: true });
         // the page under an open list takes no taps: the list (and a tap beside it to close) does
         const target = cv.target;
@@ -255,31 +254,26 @@ class Page {
         if (id === 'alerts') { const n = WARN_KEYS.filter((k) => this.get(k) > 0).length; return n ? n + ' warning' + (n > 1 ? 's' : '') + ' on' : 'warnings off'; }
         if (id === 'gmeter') return this.optLabel('gRange', this.get('gRange')) + ' · trail ' + this.optLabel('gTrail', this.get('gTrail')).toLowerCase();
         if (id === 'colours') return this.valueText('hudTheme').replace(/ \(.*\)$/, '');
-        if (id === 'about') return 'FDX100';
+        if (id === 'about') return 'iX3 fork';
         if (id === 'settings') return (this.get('units') === 'metric' ? 'km/h' : 'mph') + ' · ' + fmtInt(this.get('redline')) + ' rpm';
         return '';
     }
 
     /* ---------- About ---------- */
-    /** Who made it: the KB logo (the app's icon), the author and the project link, a line about what it is. */
+    /** Who made it: the app's logo (its icon), where it comes from and the project link, a line about what it is. */
     aboutTab(cv, bottom) {
         const x = CX, y = 62, w = CW, h = Math.min(bottom - 74, 424);
-        cv.card(x, y, w, h, 18, [[0, A(C.blue, 0.10)], [1, A(C.red, 0.06)]]);
+        cv.card(x, y, w, h, 18, [[0, A(C.blue, 0.10)], [1, A(C.gold, 0.06)]]);
         cv.strokeRoundRect(x, y, w, h, 18, 1, A(C.blueHi, 0.25));
-        // the logo, as on the app's icon: a KB monogram over the flag's stripes with the gold sun
-        const lx = x + 34, ly = y + 34, ls = 190;
-        cv.strokeRoundRect(lx, ly, ls, ls, 38, 6, '#ffffff');
-        cv.text('KB', lx + ls / 2, ly + 108, 84, '#ffffff', { font: 'bold', align: 'center', literal: true });
-        const sx = lx + 36, sw = ls - 72, sy = ly + 124;
-        cv.fillRect(sx, sy, sw, 13, C.red); cv.fillRect(sx, sy + 13, sw, 13, '#ffffff'); cv.fillRect(sx, sy + 26, sw, 13, '#278e43');
-        cv.circle(lx + ls / 2, sy + 19, 16, C.gold);
-        for (let i = 0; i < 21; i++) {
-            const a = i * 2 * Math.PI / 21;
-            cv.line(lx + ls / 2 + Math.sin(a) * 16, sy + 19 - Math.cos(a) * 16, lx + ls / 2 + Math.sin(a) * 25, sy + 19 - Math.cos(a) * 25, 3, C.gold);
-        }
+        // the logo, as on the app's icon (kit/tools/make_icon.js, glyph ix3): an iX3 monogram inside a white gauge line with an amber swoosh
+        const lx = x + 34, ly = y + 34, ls = 190, k = ls / 140, mx = lx + ls / 2, my = ly + 70 * k;
+        cv.strokeRoundRect(lx + 10 * k, ly + 10 * k, 120 * k, 120 * k, 24 * k, 6 * k, '#ffffff');
+        cv.arc(mx, my, 42 * k, 48 * k, -125, 125, '#ffffff', { round: true });
+        cv.arc(mx, my, 31 * k, 38 * k, -125, 35, C.gold, { round: true });
+        cv.text('iX3', mx, ly + 80 * k, 34 * k, '#ffffff', { font: 'bold', align: 'center', literal: true });
         const tx = lx + ls + 44;
-        cv.text('KurdBimmer Themes', tx, y + 62, 38, C.text, { font: 'bold', literal: true });
-        cv.text('CREATED BY', tx, y + 118, 16, C.label, { font: 'bold', literal: true });
+        cv.text('iX3 Themes', tx, y + 62, 38, C.text, { font: 'bold', literal: true });
+        cv.text('BASED ON THE WORK OF', tx, y + 118, 16, C.label, { font: 'bold', literal: true });
         cv.text('FDX100', tx, y + 166, 54, C.gold, { font: 'bold', literal: true });
         cv.roundRect(tx, y + 188, 6, 36, 3, C.blue);
         cv.text('github.com/FDX100', tx + 22, y + 217, 28, C.blueHi, { font: 'bold', literal: true });

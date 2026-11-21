@@ -106,17 +106,13 @@ if (glyph === 'gauge') {
     c.convex([[96, 56], [74, 64], [78, 78], [94, 74]], A);
     c.convex([[70, 82], [64, 94], [76, 94]], '#000000');     // nose
     for (let i = 0; i < 4; i++) c.fillRect(52 + i * 11, 104, 3, 16, '#000000');   // teeth
-} else if (glyph === 'kurd') {
-    // KurdBimmer: a KB monogram over the Kurdish flag's stripes (red, white, green) with the gold sun
-    const RED = '#ed1c24', GRN = '#278e43', GOLD = '#fbd116';
+} else if (glyph === 'ix3') {
+    // iX3 Themes: an "iX3" monogram inside a gauge line, the amber swoosh lit round part of it
+    const AMBER = '#ffb300';
     c.strokeRoundRect(10, 10, 120, 120, 24, 6, W);
-    c.text('KB', 70, 74, 62, W, { font: 'bold', align: 'center' });
-    c.fillRect(26, 88, 88, 9, RED);
-    c.fillRect(26, 97, 88, 9, W);
-    c.fillRect(26, 106, 88, 9, GRN);
-    // the sun: a gold disc with 21 short rays
-    c.circle(70, 101, 11, GOLD);
-    for (let i = 0; i < 21; i++) { const a = i * 360 / 21; const [x0, y0] = pt(70, 101, 11, a), [x1, y1] = pt(70, 101, 17, a); c.line(x0, y0, x1, y1, 2.2, GOLD); }
+    c.arc(70, 70, 42, 48, -125, 125, W, { round: true });
+    c.arc(70, 70, 31, 38, -125, 35, AMBER, { round: true });
+    c.text('iX3', 70, 80, 34, W, { font: 'bold', align: 'center' });
 } else {
     c.strokeRoundRect(14, 14, 112, 112, 22, 6, W);
     c.text(glyph, 70, 88, 56, W, { font: 'bold', align: 'center' });

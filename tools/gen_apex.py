@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/apex.json (the Apex theme): two big dials
+"""Generates apps/ix3_themes/hud/layouts/apex.json (the Apex theme): two big dials
 (speed left, revs right) with thin inner arcs, a huge gear between them with a shift strip,
 boost and two readout slots under it. Edit this and regenerate; do not hand-edit the JSON."""
 import json, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'apex.json')
-MIN = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'hybrid.json')     # its bottom row (strip_*) is the shared one
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'apex.json')
+MIN = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'hybrid.json')     # its bottom row (strip_*) is the shared one
 
 CY = 318                     # dials' centre y (content area is 1920x660)
 DIAL = 580                   # outer dial layer size

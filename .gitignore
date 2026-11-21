@@ -6,3 +6,9 @@ logos/
 bench/.data/*/logos/
 *.eps
 Mlogo.eps
+
+# build output (kit/tools/build.py writes it; the Store builds on the car) and the bench's data folder
+dist/
+bench/.data/
+__pycache__/
+*.pyc

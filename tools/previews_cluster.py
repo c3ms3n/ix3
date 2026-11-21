@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""previews_kb.py - the theme pictures the app's Themes tab shows (shared/page.js, shared/previews.js).
+"""previews_cluster.py - the theme pictures the app's Themes tab shows (shared/page.js, shared/previews.js).
 
 Every theme is shot on the bench with fixed demo values (Chromium through tools/preview/shot.js) and shipped inside the app as
-apps/kurdbimmer_themes/hud/previews/<layout>.json = { big, small: {w, h, z} } (z = base64 of the zlib-deflated RGBA rows).
+apps/ix3_themes/hud/previews/<layout>.json = { big, small: {w, h, z} } (z = base64 of the zlib-deflated RGBA rows).
 
-    node bench/server.js kurdbimmer_themes            # in one terminal (BENCH_PORT=8078 by default)
-    python3 tools/previews_kb.py kurdbimmer_themes 8078
+    node bench/server.js ix3_themes            # in one terminal (BENCH_PORT=8078 by default)
+    python3 tools/previews_cluster.py ix3_themes 8078
 
 The bench's settings are put back afterwards. Needs Pillow and Chromium.
 """

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/night.json (the Night Drive theme): a very dark, quiet cluster for night driving.
+"""Generates apps/ix3_themes/hud/layouts/night.json (the Night Drive theme): a very dark, quiet cluster for night driving.
 Two slim dials (speed left, revs right) with a thin bronze bezel, hairline ticks, a few warm-white numbers and a dim amber
 needle with a soft glow; the speed digitally inside the left dial, the gear and drive mode inside the right one, and a large
 slim clock in the middle with the range and outside temperature under it. While the Waze map shows inside the theme a window
@@ -7,8 +7,8 @@ opens in the middle (the clock gives way). Edit this and regenerate; do not hand
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'night.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'night.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 R = 238.0
 LC, RC = (330.0, 325.0), (1590.0, 325.0)
 TICK = [150, 122, 92]

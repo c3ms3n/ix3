@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/epower.json (the ePower theme), after a press photo of a BMW plug-in hybrid cluster
+"""Generates apps/ix3_themes/hud/layouts/epower.json (the ePower theme), after a press photo of a BMW plug-in hybrid cluster
 (apps/9.jpg): two big round dials on a dark navy face with polished rims, grey-white ticks and numbers and a long red-orange
 needle with a white core. Left: the speed (0..260 km/h or 0..160 mph). Right: the POWER % dial, zero at the top, the blue CHARGE
 sector to its left and 10..100 to its right. Between them a small clock, the outside temperature and the drive-mode logo; a fuel
@@ -8,8 +8,8 @@ theme the clock, temperature and logo give way to a map window between the dials
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'epower.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'epower.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 R = 288.0
 LC, RC = (470.0, 330.0), (1450.0, 330.0)
 FC, BC = (98.0, 440.0), (1822.0, 440.0)

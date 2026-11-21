@@ -25,6 +25,6 @@ if __name__=='__main__':
         p=iso(m,1.0); out[name]=[(round(x,1),round(y,1)) for x,y in p]; print(name,len(p),'area',int(m.sum()))
     json.dump(out,open('amber_polys.json','w'))
     from PIL import ImageDraw
-    img=Image.open('/home/fd/bmw-lab/KurdBimmer/apps/3.jpg').convert('RGB'); d=ImageDraw.Draw(img)
+    img=Image.open('reference/3.jpg').convert('RGB'); d=ImageDraw.Draw(img)
     for n_,p in out.items(): d.line(p+[p[0]],fill=(0,255,0),width=1)
     img.crop((215,540,1400,780)).resize((1185*1,240*1)).save('amber_chk.png')

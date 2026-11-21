@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/rain.json (the Digital Rain theme): falling green glyph columns behind the gauges
+"""Generates apps/ix3_themes/hud/layouts/rain.json (the Digital Rain theme): falling green glyph columns behind the gauges
 (one shader layer, shaders.js MRAIN; the rain runs faster with the speed and is dimmed behind the readouts so they stay readable),
 the speed in huge seven-segment digits at the top with a segmented rev bar under it, the gear big in the middle, terminal lines
 on each side (TMP / OIL / FUEL / BOOST left, RNG / OUT / AVG / TIME right). While the Waze map shows inside the theme a window opens
@@ -7,8 +7,8 @@ in the middle and the gear gives way. Edit this and regenerate; do not hand-edit
 import json, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'rain.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'rain.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 
 
 def cell(font):

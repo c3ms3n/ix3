@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/live.json (the Live Cockpit theme), after a native 1920x720 render of the
+"""Generates apps/ix3_themes/hud/layouts/live.json (the Live Cockpit theme), after a native 1920x720 render of the
 cluster (apps/6.png: the blue speed chevron, the red rev chevron, the big speed and gear, the bottom strip) and the photo of
 the same cluster (apps/4.jpg, apps/5.jpg: the map in the middle, the small speed and revs while it shows). The shapes come
 from tools/live6/measure6.py (render px, tools/live6/measurements.json: the left half; the right half is its mirror about
@@ -8,10 +8,10 @@ x = 960), the text from tools/live6/text.json, the rest is read off the render b
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'live.json')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'live.json')
 M = json.load(open(os.path.join(ROOT, 'tools', 'live6', 'measurements.json')))
 TX = json.load(open(os.path.join(ROOT, 'tools', 'live6', 'text.json')))
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 H = 660
 
 

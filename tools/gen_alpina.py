@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/alpina.json (the Alpina theme), after a photo of the Alpina cluster
+"""Generates apps/ix3_themes/hud/layouts/alpina.json (the Alpina theme), after a photo of the Alpina cluster
 (apps/1.png). Every shape below is measured off that photo in CROP coordinates (the photo cropped to the cluster and
 enlarged 4x: x 0..1600, y 0..660) and mapped onto the 1920x660 layer by T(). One aview shader layer (shaders.js
 ALPINA) draws everything but the text. Edit this and regenerate; do not hand-edit the JSON."""
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'alpina.json')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'alpina.json')
 
 K = 1.22                      # crop px -> layer px
 CX0, CY0 = 808, 61            # the photo's centre line and the top line

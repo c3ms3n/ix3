@@ -1,4 +1,4 @@
-// shot.js <url> <out.png> [waitMs] - a Chromium (CDP) screenshot of a page with GPU emulation; CLEAN=1 hides the bench outlines. Used by tools/previews_kb.py.
+// shot.js <url> <out.png> [waitMs] - a Chromium (CDP) screenshot of a page with GPU emulation; CLEAN=1 hides the bench outlines. Used by tools/previews_cluster.py.
 // usage: node shot.js <url> <out.png> [waitMs]
 const { spawn } = require('child_process');
 const fs = require('fs');

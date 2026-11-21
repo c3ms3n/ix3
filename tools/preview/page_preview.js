@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 // the app's JavaScript expects shared/*.js and the kit runtime side by side (as the build lays them out): copy them to a temporary folder
 const root = path.join(__dirname, '..', '..');
-const stage = path.join(require('os').tmpdir(), 'kurdbimmer-page-preview');
+const stage = path.join(require('os').tmpdir(), 'ix3-page-preview');
 fs.rmSync(stage, { recursive: true, force: true });
 fs.mkdirSync(stage, { recursive: true });
 fs.readdirSync(path.join(root, 'shared')).filter((n) => n.endsWith('.js')).forEach((n) => fs.copyFileSync(path.join(root, 'shared', n), path.join(stage, n)));
@@ -18,7 +18,7 @@ const zlib = require('zlib');
 const pics = [];
 fs.writeFileSync(path.join(stage, 'previews.js'), `'use strict';
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
-const dir = ${JSON.stringify(path.join(root, 'apps', 'kurdbimmer_themes', 'hud', 'previews'))};
+const dir = ${JSON.stringify(path.join(root, 'apps', 'ix3_themes', 'hud', 'previews'))};
 const cache = {};
 module.exports = { get(name, size) {
     const k = name + ':' + size;
@@ -38,7 +38,7 @@ const { Canvas } = require(path.join(stage, 'kit', 'canvas'));
 const themes = require(path.join(stage, 'kit', 'themes'));
 const Page = require(path.join(stage, 'page'));
 
-const spec = JSON.parse(fs.readFileSync(path.join(root, 'apps', 'kurdbimmer_themes', 'app.json'), 'utf8'));
+const spec = JSON.parse(fs.readFileSync(path.join(root, 'apps', 'ix3_themes', 'app.json'), 'utf8'));
 const store = {};
 spec.settings.forEach((s) => { store[s.key] = s.default; });
 store.hudLayout = 'apex'; store.units = 'metric'; store.mapInTheme = true;
@@ -65,8 +65,8 @@ const hud = quiet({
     activeName: 'apex', playDemo() {}, demoPlaying: () => false, demoBlocked: () => null, mapLayout: true,
     setting: (k) => store[k], car: { data: () => ({ demo: false }) },
     waze: { info: () => ({ text: 'Map showing in the theme', up: true, ok: true }) },
-    // the real logo lookup on the bench's data folder (put test PNGs in bench/.data/kurdbimmer_themes/logos/)
-    logos: new (require(path.join(stage, 'logos.js')).Logos)(path.join(root, 'bench', '.data', 'kurdbimmer_themes'), { info() {}, warn() {} }),
+    // the real logo lookup on the bench's data folder (put test PNGs in bench/.data/ix3_themes/logos/)
+    logos: new (require(path.join(stage, 'logos.js')).Logos)(path.join(root, 'bench', '.data', 'ix3_themes'), { info() {}, warn() {} }),
 });
 const outDir = path.join(__dirname, 'out');
 fs.mkdirSync(outDir, { recursive: true });
@@ -86,8 +86,8 @@ langs.forEach((lang) => tabs.forEach((tab) => {
         shots.push(tab + (lang === 'en' ? '' : '-' + lang));
     } catch (e) { console.log('tab ' + tab + ': ' + (e && e.message)); }
 }));
-fs.writeFileSync(path.join(outDir, 'index.html'), '<!doctype html><meta charset="utf-8"><title>KurdBimmer pages</title><body style="background:#111;color:#ddd;font:14px sans-serif;margin:16px">' +
-    '<h2>KurdBimmer Themes: the app\'s centre-screen pages</h2>' + shots.map((t) => '<h3>' + t + '</h3><img src="page-' + t + '.png" style="max-width:100%;border:1px solid #333">').join('') + '</body>');
+fs.writeFileSync(path.join(outDir, 'index.html'), '<!doctype html><meta charset="utf-8"><title>iX3 Themes pages</title><body style="background:#111;color:#ddd;font:14px sans-serif;margin:16px">' +
+    '<h2>iX3 Themes: the app\'s centre-screen pages</h2>' + shots.map((t) => '<h3>' + t + '</h3><img src="page-' + t + '.png" style="max-width:100%;border:1px solid #333">').join('') + '</body>');
 console.log('drew', shots.join(', '), '->', outDir);
 if (process.env.COLLECT) {
     // the strings of the settings and their options too (the page shows them as values and rows)

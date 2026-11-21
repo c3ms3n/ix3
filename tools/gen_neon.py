@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/neon.json (the Neon City theme): a Cyberpunk-style sport cluster. A lit night-city
+"""Generates apps/ix3_themes/hud/layouts/neon.json (the Neon City theme): a Cyberpunk-style sport cluster. A lit night-city
 skyline along the bottom with twinkling neon windows (the windows twinkle faster with the speed), angular neon frames in yellow,
 cyan and magenta, the speed huge in yellow with a cyan ghost, a slanted rev strip that runs yellow, orange, magenta with a peak
 mark, the gear and drive mode in magenta, and data cards left and right. While the Waze map shows inside the theme a window opens
@@ -7,8 +7,8 @@ under the speed (the skyline is cut out of it and the gear gives way). Edit this
 import json, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'neon.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'neon.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 Y, C, M, WH = [252, 238, 10], [20, 242, 255], [255, 30, 150], [255, 255, 255]
 
 

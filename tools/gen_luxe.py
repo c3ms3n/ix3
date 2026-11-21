@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/luxe.json (the Luxe theme): a classic, luxurious e-drive cluster. Two big round dials
+"""Generates apps/ix3_themes/hud/layouts/luxe.json (the Luxe theme): a classic, luxurious e-drive cluster. Two big round dials
 on warm espresso faces with champagne-gold bezels and ivory numerals: the speed on the left (0..260 km/h or 0..160 mph) and the POWER
 dial on the right (zero at the top, the CHARGE sector to its left, 10..100 to its right), a fuel level under the speed and the battery
 charge under the power. Between them an analog clock, the drive mode, the battery and the range. While the Waze map
@@ -8,9 +8,9 @@ as the ePower and Night Drive themes (round dials, thin arcs, text). Edit this a
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'luxe.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
-STRIP = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'night.json')    # its bottom row (strip_*) is the shared one
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'luxe.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
+STRIP = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'night.json')    # its bottom row (strip_*) is the shared one
 R = 262.0
 LC, RC = (470.0, 330.0), (1450.0, 330.0)
 TICK = [238, 226, 196]

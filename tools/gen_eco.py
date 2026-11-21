@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/eco.json (the Eco theme): two ring dials in the style of the BMW i8's cluster
+"""Generates apps/ix3_themes/hud/layouts/eco.json (the Eco theme): two ring dials in the style of the BMW i8's cluster
 (apps/6.jpg), made calmer and more precise. Left: the speed ring (0..260 km/h, 0..160 mph) with the efficient-speed window
 marked in green and the engine temperature on a thin inner ring. Right: the power ring (0..100 %, blue in the eco range, amber
 then red as it rises) with the fuel level on a thin inner ring. Middle: the outside temperature and clock, the drive mode and
@@ -7,8 +7,8 @@ gear, a glowing perspective floor. Bottom: the range, the clock and the outside 
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'eco.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'eco.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 
 LC, RC = (470.0, 325.0), (1450.0, 325.0)     # the dials' centres
 R = 232.0                                    # the ring's mid radius

@@ -2,7 +2,7 @@
 # Put your badge logo PNGs on the car (they are read by the Badge tab and every theme's badge spot), over SSH.
 #
 #   ./scripts/logos.sh root@<car-ip-or-hostname> logos/*.png
-#   APP=kurdbimmer_themes ./scripts/logos.sh root@<car> bmw.png m.png i.png alpina.png m340i.png
+#   APP=ix3_themes ./scripts/logos.sh root@<car> bmw.png m.png i.png alpina.png m340i.png
 #
 # The app ships no BMW, M, i or ALPINA artwork (trademarks, and this repository is public): the pictures are yours. Transparent
 # PNG, any size up to 4096 px, 8 or 16 bit, not interlaced. File names the app looks for, first that exists wins:
@@ -13,7 +13,7 @@
 # is found on the car (OAP installs each app under /var/opt/public/oap/oap_<uid>/) and SSH access as root is assumed.
 set -euo pipefail
 
-APP_ID="${APP:-kurdbimmer_themes}"
+APP_ID="${APP:-ix3_themes}"
 OAP_ROOT="/var/opt/public/oap"
 
 [ $# -ge 2 ] || { echo "Usage: $(basename "$0") <car-ssh-host> <logo.png> [more.png ...]" >&2; exit 1; }

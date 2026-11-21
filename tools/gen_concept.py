@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/concept.json (the Concept theme), after a photo of BMW's Concept 8 Series
+"""Generates apps/ix3_themes/hud/layouts/concept.json (the Concept theme), after a photo of BMW's Concept 8 Series
 cluster (apps/3.jpg). The shapes come from tools/concept/measure.py (traced off the photo into
 tools/concept/measurements.json, photo px) and a few hand-read positions below; T() maps photo px onto the 1920x660
 layer. Shader layers draw everything but the text: CMAP, and per gauge CVIEW cut into three layers for the iX3 (shaders.js
@@ -8,7 +8,7 @@ do not hand-edit the JSON."""
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'concept.json')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'concept.json')
 M = json.load(open(os.path.join(ROOT, 'tools', 'concept', 'measurements.json')))
 TX = json.load(open(os.path.join(ROOT, 'tools', 'concept', 'text.json')))        # white text blobs (photo px bounding boxes)
 ST = json.load(open(os.path.join(ROOT, 'tools', 'concept', 'stars_fit.json')))   # the star lattice, per half
@@ -152,7 +152,7 @@ W.append({'id': 'cmap', 'type': 'cmap', 'class': 'content', 'z': 0, 'x': 0, 'y':
 W.extend(gauge('_l', 'left'))
 W.extend(gauge('_r', 'right'))
 # the numbers, speed, mode and gear: placed on the white blobs found in the photo (tools/concept/measure_text.py)
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 
 
 def cell(font):

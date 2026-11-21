@@ -9,7 +9,7 @@ SPOTS: layout -> (x, y, w, h, align, font, colour role, toggle). A toggle of "!m
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LAYOUTS = os.path.join(HERE, '..', 'apps', 'kurdbimmer_themes', 'hud', 'layouts')
+LAYOUTS = os.path.join(HERE, '..', 'apps', 'ix3_themes', 'hud', 'layouts')
 SPOTS = {
     'alpina':      (800, 330, 320, 80, 'center', 'badge', 'dim', '!mapUp'),
     'apex':        (810, 22, 300, 64, 'center', 'badge', 'dim', None),

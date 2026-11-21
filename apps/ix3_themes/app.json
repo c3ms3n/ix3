@@ -1,11 +1,11 @@
 {
-  "id": "kurdbimmer_themes",
-  "title": "KurdBimmer Themes",
-  "description": "Seventeen full-screen cluster themes with a Kurdish (Sorani) interface. By FDX100. Needs cluster-render.",
+  "id": "ix3_themes",
+  "title": "iX3 Themes",
+  "description": "Seventeen full-screen instrument cluster themes for the BMW iX3, with an English / Kurdish (Sorani) settings page. Based on the work of FDX100. Needs cluster-render.",
   "version": "0.25.0",
   "vendor": "custom",
   "loggingId": "OAC1",
-  "iconGlyph": "kurd",
+  "iconGlyph": "ix3",
   "shared": [
     "hud.js",
     "hud_text.js",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/e46.json (the E46 theme): the white-faced analog cluster of an E46 M3 GTR (apps/11.jpg),
+"""Generates apps/ix3_themes/hud/layouts/e46.json (the E46 theme): the white-faced analog cluster of an E46 M3 GTR (apps/11.jpg),
 laid out as in the photo: a big speedometer (red notched km/h scale 20..240, an inner black mph scale 10..150), a big tachometer
 (0..8 with the orange and red zones, the M3 GTR badge, V8, 1/min x1000, a small oil gauge at the bottom), a fuel gauge on the left
 and a coolant gauge on the right, the dark binnacle with the warning-light plate, the turn arrows, and the orange LCD with the odometer
@@ -7,8 +7,8 @@ and the trip. Positions are the photo's pixels (T() maps them onto the 1920x660 
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'e46.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'e46.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 S = 1.37
 
 

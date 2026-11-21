@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/bluedials.json (the Blue Dials theme), after a photo of a BMW 5 Series analog-style
+"""Generates apps/ix3_themes/hud/layouts/bluedials.json (the Blue Dials theme), after a photo of a BMW 5 Series analog-style
 digital cluster (apps/8.jpeg): two round dials with a vivid blue face, white ticks and numbers, a dark inner disc and a tapered
 red needle (speed 0..330 km/h or 0..200 mph on the left, revs 0..7 on the right), a small fuel dial far left and a small
 temperature dial far right, a blue road floor in the middle with the speed, the temperature and the gear. While the Waze map
@@ -7,8 +7,8 @@ shows inside the theme the road gives way to a map window and the speed stays ab
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'bluedials.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'bluedials.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 R = 272.0
 LC, RC = (470.0, 330.0), (1450.0, 330.0)
 FC, TC = (100.0, 410.0), (1820.0, 410.0)

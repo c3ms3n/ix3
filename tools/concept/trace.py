@@ -1,7 +1,7 @@
 import numpy as np, json, math
 from PIL import Image
 from scipy import ndimage as ndi
-im=np.asarray(Image.open('/home/fd/bmw-lab/KurdBimmer/apps/3.jpg').convert('RGB')).astype(float)
+im=np.asarray(Image.open('reference/3.jpg').convert('RGB')).astype(float)
 R,G,B=im[...,0],im[...,1],im[...,2]
 lum=(R+G+B)/3
 sm=ndi.gaussian_filter(lum,1.2)

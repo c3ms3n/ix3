@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates apps/kurdbimmer_themes/hud/layouts/glass.json (the Glass theme), after a render of a clean modern cluster (apps/10.jpg):
+"""Generates apps/ix3_themes/hud/layouts/glass.json (the Glass theme), after a render of a clean modern cluster (apps/10.jpg):
 two big glass-ring dials on a dark navy ground (speed 0..270 km/h or 0..180 mph on the left, revs 0..9 on the right) with a thin
 white outer ring, a steel-blue glass ring carrying the white ticks, a blue comet glow behind a thin blue needle with a white edge,
 a red dashed band at the top of the rev scale, and a bright rounded level arc low on each face (fuel left, engine temperature
@@ -8,8 +8,8 @@ middle itself left clear for Waze on Cluster: while the Waze map shows inside th
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-OUT = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'layouts', 'glass.json')
-FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
+OUT = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'layouts', 'glass.json')
+FONT_DIR = os.path.join(ROOT, 'apps', 'ix3_themes', 'hud', 'fonts')
 S = 1.17
 
 
