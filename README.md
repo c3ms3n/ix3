@@ -9,6 +9,13 @@ Made by <a href="https://github.com/FDX100">FDX100</a>.
 
 > **Every theme and feature here is tested on a BMW G20 with iDrive 7 (ID7)**, by the author, on his own car. Other models with an iDrive 7 head unit should work the same way, but they are not tested. Install at your own risk, as with any non-BMW app on a head unit.
 
+## This fork (BMW iX3)
+
+A fork of [FDX100/KB](https://github.com/FDX100/KB) for a BMW iX3 (iDrive 7). Themes with a big one-off shader (Alpina, Concept, Live Cockpit) restarted the iX3's head unit, so they are being cut down here one by one; Apex runs.
+
+- **Concept** now draws each gauge as three small shader layers (the line with the swoosh, the glass panel, the little fuel / coolant gauge) instead of one big one: at most 53 uniform vectors in a shader, not 118. It looks the same on the bench (largest pixel difference 19 of 255); only the car shows whether the iX3 takes it.
+- **Concept: match the ambient light colour** (Settings tab, off by default): the gauges' blues take the colour of the car's ambient light, read now and then from the body controller (read-only requests). The amber swoosh stays amber.
+
 ## What you get
 
 - **17 cluster themes**, each drawn for the full 1920x720 cluster (see below).

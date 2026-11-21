@@ -2232,6 +2232,226 @@ void main() {
     }
     gl_FragColor = vec4(g_acc.rgb / max(g_acc.a, 0.0001), g_acc.a);
 }`;
+// ---- the Concept theme for the iX3: CVIEW cut into three smaller programs (cline, cpanel, cmini), the same drawing. One
+// program with 118 uniform vectors and six loops restarted the iX3's head unit (Apex, 12 vectors and no loops, ran), so each
+// part now holds only what it draws: the line and swoosh ~52 vectors, the panel ~45, the little gauge ~30, and each layer
+// is cropped to its own area. Stack: cpanel under cline; cmini apart. What the cut changed: the panel's stars are no longer
+// tinted amber by the swoosh (the swoosh's amber glow, drawn over the panel, stands in), and the faint blue glass glow
+// just inside the line is drawn over the panel, not under it (bench: 0.2 of 255 mean difference from the one-shader gauge).
+// u_amb takes the ambient light's colour in place of the blues.
+const CV_HEAD = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_amb;        // the accent: rgb (largest channel 1), w how much of it replaces the blues (0 = as drawn)
+uniform vec4 u_cn;         // counts: swoosh samples, panel vertices, little line points, little band samples
+// A blue of the drawing (its largest channel is blue; red / blue is how white it is) in the accent colour instead.
+vec3 acc(vec3 c) {
+    float b = max(c.b, 0.001);
+    float w = clamp(c.r / b, 0.0, 1.0);
+    return mix(c, b * (vec3(w) + (1.0 - w) * u_amb.rgb), u_amb.w);
+}
+bool inBox(vec2 q, vec4 b) { return q.x > b.x && q.x < b.z && q.y > b.y && q.y < b.w; }
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec4 g_acc;
+void lay(vec3 col, float a) {
+    a = clamp(a, 0.0, 1.0);
+    g_acc.rgb = col * a + g_acc.rgb * (1.0 - a);
+    g_acc.a = a + g_acc.a * (1.0 - a);
+}
+// the amber of a swoosh across its width t (0 outer .. 1 inner)
+vec3 amber(float t) {
+    vec3 c = mix(vec3(0.98, 0.62, 0.08), vec3(1.0, 0.84, 0.2), smoothstep(0.0, 0.35, t));
+    c = mix(c, vec3(1.0, 0.94, 0.55), smoothstep(0.45, 0.88, t));
+    return mix(c, vec3(1.0, 0.98, 0.9), smoothstep(0.9, 1.0, t));
+}
+`;
+const CVIEW_LINE = `// The Concept theme's gauge line for the iX3 (GLSL ES 1.00): the glossy blue-white line (u_path, bottom end to top end), the
+// amber swoosh lit from 0 to u_val.x (a band between two depths of the line, u_sw) and its glow, the white marks at the
+// numbers and the line under the speed / the drive mode. Straight alpha out; it sits over the panel (CVIEW_PANEL).
+` + CV_HEAD + `
+uniform vec4 u_path[24];   // x, y, arc length, -
+uniform float u_n;
+uniform vec4 u_lwS;        // arc lengths of four line-width keypoints
+uniform vec4 u_lwW;        // and their widths (px)
+uniform vec4 u_val;        // the swoosh's end (arc length) in x
+uniform float u_flip;      // +1 when the gauge is on the right-hand side of the line's direction, -1 on the left
+uniform vec4 u_tk[7];      // arc lengths of the marks: + a number's, - a small one between
+uniform vec4 u_sw[12];     // the swoosh: arc length, depth from, depth to, -
+uniform vec4 u_ul;         // the line under the speed: x0, x1, y, half thickness
+uniform vec4 u_bb;         // the line plus its glow's reach, layer px: a pixel outside it skips the loops
+vec2 swAB(float s) {
+    vec2 r = u_sw[0].yz;
+    for (int i = 0; i < 11; i++) {
+        if (float(i) + 1.0 >= u_cn.x) break;
+        vec4 a = u_sw[i], b = u_sw[i + 1];
+        if (s >= a.x) r = mix(a.yz, b.yz, clamp((s - a.x) / max(b.x - a.x, 0.001), 0.0, 1.0));
+    }
+    return r;
+}
+float lineW(float s) {
+    float w = u_lwW.x;
+    w = mix(w, u_lwW.y, clamp((s - u_lwS.x) / max(u_lwS.y - u_lwS.x, 0.001), 0.0, 1.0));
+    w = mix(w, u_lwW.z, clamp((s - u_lwS.y) / max(u_lwS.z - u_lwS.y, 0.001), 0.0, 1.0) * step(u_lwS.y, s));
+    w = mix(w, u_lwW.w, clamp((s - u_lwS.z) / max(u_lwS.w - u_lwS.z, 0.001), 0.0, 1.0) * step(u_lwS.z, s));
+    return w;
+}
+void tickAt(float tk, float s, float sd) {
+    if (tk == 0.0) return;
+    float a = abs(tk);
+    float len = tk > 0.0 ? 15.0 : 8.0;
+    float m = cov(abs(s - a) - (tk > 0.0 ? 1.0 : 0.7)) * cov(abs(sd - (5.0 + len * 0.5)) - len * 0.5);
+    lay(vec3(0.95, 0.97, 1.0), m * (tk > 0.0 ? 0.95 : 0.45));
+}
+void main() {
+    vec2 q = v_uv * u_size;
+    g_acc = vec4(0.0);
+    float best = 1e6, s = 0.0, sd = 0.0;
+    bool near = inBox(q, u_bb);
+    if (near) {
+        for (int i = 0; i < 23; i++) {
+            if (float(i) >= u_n - 1.0) break;
+            vec2 a = u_path[i].xy, b = u_path[i + 1].xy, ba = b - a;
+            float L = max(length(ba), 0.001);
+            float h = clamp(dot(q - a, ba) / (L * L), 0.0, 1.0);
+            vec2 d = q - (a + ba * h);
+            float dist = length(d);
+            if (dist < best) { best = dist; s = u_path[i].z + h * (u_path[i + 1].z - u_path[i].z); sd = u_flip * (ba.x * d.y - ba.y * d.x) / L; }
+        }
+    }
+    float sv = u_val.x;
+    // 1 where the nearest point of the line is not just its end (beside the line, not past its end)
+    float side = step(abs(best - abs(sd)), 1.6);
+    vec2 ab = near ? swAB(s) : vec2(0.0);
+    float over = max(sd - ab.y, 0.0);
+    float past = max(s - sv, 0.0);
+    float glow = exp(-over / 36.0) * exp(-past / 28.0) * step(0.0, sd - ab.x + 4.0) * smoothstep(u_sw[0].x - 30.0, u_sw[0].x + 10.0, s) * side;
+    // the glass just inside the line: a faint glow
+    if (sd > 0.0) lay(acc(vec3(0.1, 0.26, 0.5)), 0.42 * exp(-sd / 38.0) * side);
+    // the swoosh's glow: amber light spilling over the panel from the lit band
+    lay(vec3(1.0, 0.78, 0.2), glow * 0.5);
+    // the swoosh itself, lit from 0 to the value, cut square at the top
+    if (side > 0.5 && sd >= ab.x - 1.0 && sd <= ab.y + 1.0 && s <= sv + 0.5 && s >= u_sw[0].x - 6.0) {
+        float t = clamp((sd - ab.x) / max(ab.y - ab.x, 1.0), 0.0, 1.0);
+        float edge = cov(ab.x - sd) * cov(sd - ab.y);
+        float cut = cov(s - sv);
+        vec3 col = amber(t);
+        col = mix(col, vec3(1.0, 0.98, 0.88), smoothstep(2.5, 0.0, sv - s) * 0.85);
+        lay(col, clamp(edge, 0.0, 1.0) * cut);
+    }
+    // the glossy line: a glow, the bright core, a faint second line inside it
+    float w = lineW(s);
+    lay(acc(vec3(0.25, 0.55, 0.95)), exp(-best / 5.0) * 0.22);
+    lay(acc(vec3(0.78, 0.91, 1.0)), cov(best - w * 0.5));
+    lay(acc(vec3(0.4, 0.64, 0.95)), cov(abs(sd - 10.0) - 0.7) * 0.7 * step(0.0, sd));
+    // the marks at the numbers
+    if (sd > 4.4 && sd < 20.6) {
+        for (int i = 0; i < 7; i++) {
+            vec4 t4 = u_tk[i];
+            tickAt(t4.x, s, sd); tickAt(t4.y, s, sd); tickAt(t4.z, s, sd); tickAt(t4.w, s, sd);
+        }
+    }
+    // the line under the speed (left) and the drive mode (right): a bright bar over a thinner one
+    if (q.x >= u_ul.x && q.x <= u_ul.y) {
+        float f = smoothstep(u_ul.x, u_ul.x + 14.0, q.x) * (1.0 - smoothstep(u_ul.y - 24.0, u_ul.y, q.x));
+        lay(vec3(0.96, 0.98, 1.0), cov(abs(q.y - u_ul.z) - u_ul.w) * (0.55 + 0.45 * f));
+        lay(vec3(0.7, 0.82, 0.95), cov(abs(q.y - (u_ul.z + u_ul.w * 2.4)) - u_ul.w * 0.5) * 0.7 * f);
+    }
+    gl_FragColor = vec4(g_acc.rgb / max(g_acc.a, 0.0001), g_acc.a);
+}`;
+const CVIEW_PANEL = `// The Concept theme's glass panel for the iX3 (GLSL ES 1.00): dark glass inside the line (u_pan, an outline), its edge and
+// the three-pointed stars. Straight alpha out; under CVIEW_LINE. u_org is the layer's top-left in target px.
+` + CV_HEAD + `
+uniform vec2 u_pan[36];    // the panel's outline
+uniform vec4 u_star;       // the star lattice: pitch x, pitch y, offset x, offset y of the second set
+uniform vec2 u_sorg;       // a point of the lattice
+uniform vec2 u_org;
+uniform vec4 u_bbP;        // the panel's box, layer px
+float segD(vec2 p, vec2 a, vec2 b) {
+    vec2 pa = p - a, ba = b - a;
+    return length(pa - ba * clamp(dot(pa, ba) / max(dot(ba, ba), 0.0001), 0.0, 1.0));
+}
+` + polyFn('polyPan', 'u_pan', 'u_cn.y', '36') + `
+// the three-pointed star at a lattice point: the distance to its nearest arm
+float starD(vec2 l) {
+    float d = segD(l, vec2(0.0), vec2(0.0, 3.6));
+    d = min(d, segD(l, vec2(0.0), vec2(-3.2, -1.9)));
+    d = min(d, segD(l, vec2(0.0), vec2(3.2, -1.9)));
+    return d;
+}
+float stars(vec2 p) {
+    vec2 pitch = u_star.xy;
+    vec2 a = ((p - u_sorg) / pitch);
+    vec2 la = (a - floor(a + 0.5)) * pitch;
+    vec2 pb = p - u_sorg - u_star.zw;
+    vec2 b = (pb / pitch);
+    vec2 lb = (b - floor(b + 0.5)) * pitch;
+    return min(starD(la), starD(lb));
+}
+void main() {
+    vec2 q = v_uv * u_size;
+    g_acc = vec4(0.0);
+    float dP = inBox(q, u_bbP) ? polyPan(q) : 1e3;
+    if (dP < 0.8) {
+        float ty = clamp((q.y + u_org.y - 410.0) / 330.0, 0.0, 1.0);
+        vec3 pc = mix(acc(vec3(0.055, 0.125, 0.21)), acc(vec3(0.075, 0.17, 0.28)), ty);
+        lay(pc, 0.86 * cov(dP));
+        lay(acc(vec3(0.45, 0.66, 0.94)), cov(abs(dP) - 0.9) * 0.6);
+        if (dP < -11.0) {
+            float sc = cov(stars(q) - 1.0);
+            float inner = smoothstep(0.0, 90.0, -dP);
+            lay(acc(vec3(0.72, 0.84, 1.0)), sc * (0.8 + 0.2 * ty) * (0.65 + 0.35 * inner));
+        }
+    }
+    gl_FragColor = vec4(g_acc.rgb / max(g_acc.a, 0.0001), g_acc.a);
+}`;
+const CVIEW_MINI = `// The Concept theme's little gauge for the iX3 (GLSL ES 1.00): fuel on the left, coolant on the right, a short line
+// (u_mp) with its amber band (u_msw) lit from 0 to u_val.y. Straight alpha out.
+` + CV_HEAD + `
+uniform vec4 u_mp[12];     // the little gauge's line (x, y, arc length, -)
+uniform vec4 u_msw[14];    // its band (arc length, depth from, depth to, -)
+uniform vec4 u_val;        // the band's end (arc length) in y
+uniform float u_flip;
+uniform vec4 u_bbM;        // the little gauge plus its band, layer px
+vec2 mAB(float s) {
+    vec2 r = u_msw[0].yz;
+    for (int i = 0; i < 13; i++) {
+        if (float(i) + 1.0 >= u_cn.w) break;
+        vec4 a = u_msw[i], b = u_msw[i + 1];
+        if (s >= a.x) r = mix(a.yz, b.yz, clamp((s - a.x) / max(b.x - a.x, 0.001), 0.0, 1.0));
+    }
+    return r;
+}
+void main() {
+    vec2 q = v_uv * u_size;
+    g_acc = vec4(0.0);
+    if (inBox(q, u_bbM)) {
+        float mb = 1e6, ms = 0.0, msd = 0.0;
+        for (int i = 0; i < 11; i++) {
+            if (float(i) >= u_cn.z - 1.0) break;
+            vec2 a = u_mp[i].xy, b = u_mp[i + 1].xy, ba = b - a;
+            float L = max(length(ba), 0.001);
+            float h = clamp(dot(q - a, ba) / (L * L), 0.0, 1.0);
+            vec2 d = q - (a + ba * h);
+            float dist = length(d);
+            if (dist < mb) { mb = dist; ms = u_mp[i].z + h * (u_mp[i + 1].z - u_mp[i].z); msd = u_flip * (ba.x * d.y - ba.y * d.x) / L; }
+        }
+        float mv = u_val.y;
+        vec2 mab = mAB(ms);
+        if (abs(mb - abs(msd)) < 1.6 && msd >= mab.x - 1.0 && msd <= mab.y + 1.0 && ms <= mv + 0.5) {
+            float t = clamp((msd - mab.x) / max(mab.y - mab.x, 1.0), 0.0, 1.0);
+            vec3 col = amber(t);
+            col = mix(col, vec3(1.0, 0.98, 0.88), smoothstep(2.5, 0.0, mv - ms) * 0.85);
+            lay(col, cov(mab.x - msd) * cov(msd - mab.y) * cov(ms - mv));
+        }
+        lay(acc(vec3(0.25, 0.55, 0.95)), exp(-mb / 6.0) * 0.28);
+        lay(acc(vec3(0.8, 0.92, 1.0)), cov(mb - 1.7));
+    }
+    gl_FragColor = vec4(g_acc.rgb / max(g_acc.a, 0.0001), g_acc.a);
+}`;
 // ---- the Live Cockpit theme (layouts/live.json, made by tools/gen_live.py; every shape traced off a native 1920x720 render of
 // the cluster by tools/live6/). Two effect layers: LSTRIP (the blue / red strip along the bottom, the Waze map's window cut
 // see-through while u_hole is set) and one LGAUGE for each half: the bright outer line, the thin inner line, the filled band
@@ -3443,4 +3663,4 @@ void main() {
     gl_FragColor = vec4(g_acc.rgb / max(g_acc.a, 0.0001), g_acc.a);
 }`;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, aview: ALPINA, cmap: CMAP, cview: CVIEW, eside: ESIDE, wdial: WDIAL, wgauge: WGAUGE, gdial: GDIAL, gpoly: GPOLY, csky: CSKY, neon: NEON, mrain: MRAIN, aclock: ACLOCK, mband: MBAND, adial: ADIAL, apanel: APANEL, efloor: EFLOOR, lstrip: LSTRIP, lgauge: LGAUGE, vdash: VDASH };
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, aview: ALPINA, cmap: CMAP, cview: CVIEW, cline: CVIEW_LINE, cpanel: CVIEW_PANEL, cmini: CVIEW_MINI, eside: ESIDE, wdial: WDIAL, wgauge: WGAUGE, gdial: GDIAL, gpoly: GPOLY, csky: CSKY, neon: NEON, mrain: MRAIN, aclock: ACLOCK, mband: MBAND, adial: ADIAL, apanel: APANEL, efloor: EFLOOR, lstrip: LSTRIP, lgauge: LGAUGE, vdash: VDASH };

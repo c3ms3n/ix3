@@ -2,8 +2,9 @@
 """Generates apps/kurdbimmer_themes/hud/layouts/concept.json (the Concept theme), after a photo of BMW's Concept 8 Series
 cluster (apps/3.jpg). The shapes come from tools/concept/measure.py (traced off the photo into
 tools/concept/measurements.json, photo px) and a few hand-read positions below; T() maps photo px onto the 1920x660
-layer. Two shader layers (shaders.js CMAP and CVIEW) draw everything but the text. Edit this and regenerate; do not
-hand-edit the JSON."""
+layer. Shader layers draw everything but the text: CMAP, and per gauge CVIEW cut into three layers for the iX3 (shaders.js
+CVIEW_LINE, CVIEW_PANEL, CVIEW_MINI: the whole gauge in one shader restarted its head unit). Edit this and regenerate;
+do not hand-edit the JSON."""
 import json, math, os
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -95,7 +96,8 @@ def gauge(name, side):
     band = [[round(s_ * S, 1), round(a * S, 1), round(b * S, 1)] for s_, a, b in sw[:12]]
     mini_band = [[round(s_ * S, 1), round(a * S, 1), round(b * S, 1)] for s_, a, b in mb[::2]][:14]
     mini_arcs = [mini_band[0][0], mini_band[-1][0]]
-    d = {'id': name, 'type': 'cview', 'class': 'content', 'z': 1, 'x': 0 if side == 'left' else 960, 'y': 0, 'w': 960, 'h': 660,
+    x0 = 0 if side == 'left' else 960
+    d = {'id': name, 'type': 'cview', 'class': 'content', 'z': 1, 'x': x0, 'y': 0, 'w': 960, 'h': 660,
          'flip': 1 if side == 'left' else -1, 'quantity': 'speed' if side == 'left' else 'rpm',
          'path': r1(Tp(outer)),
          'lineW': [[0.0, round(1.8 * S, 1)], [round(0.30 * total * S, 1), round(3.4 * S, 1)], [round(0.62 * total * S, 1), round(3.2 * S, 1)],
@@ -107,7 +109,28 @@ def gauge(name, side):
          'starOrigin': [round(v, 2) for v in T(*ST[side]['origin'])],
          'steps': {'metric': SPEED_KMH, 'us': SPEED_MPH} if side == 'left' else list(range(8)),
          'arcs': [round(a * S, 1) for a in arcs]}
-    return d
+    return parts(d, x0)
+
+
+def crop(pts, pad, x0):
+    """The layer rect (x, y, w, h) round pts plus pad, inside the gauge's half of the layer."""
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    l, t = max(x0, math.floor(min(xs) - pad)), max(0, math.floor(min(ys) - pad))
+    r, b = min(x0 + 960, math.ceil(max(xs) + pad)), min(660, math.ceil(max(ys) + pad))
+    return {'x': l, 'y': t, 'w': r - l, 'h': b - t}
+
+
+def parts(d, x0):
+    """One cview's data as its three layers (hud.js CVIEW_TYPES): the panel, the line with the swoosh, the little gauge."""
+    sfx = d['id'][-2:]
+    depth = max(max(abs(e[1]), abs(e[2])) for e in d['miniBand'])
+    pick = lambda keys: {k: d[k] for k in keys}
+    panel = {'id': 'cpanel' + sfx, 'type': 'cpanel', 'class': 'content', 'z': 1, **crop(d['panel'], 4, x0), **pick(['panel', 'star', 'starOrigin'])}
+    line = {'id': 'cline' + sfx, 'type': 'cline', 'class': 'content', 'z': 2, 'x': x0, 'y': 0, 'w': 960, 'h': 660,
+            **pick(['flip', 'quantity', 'path', 'lineW', 'ticks', 'swoosh', 'underline', 'steps', 'arcs'])}
+    mini = {'id': 'cmini' + sfx, 'type': 'cmini', 'class': 'content', 'z': 2, **crop(d['mini'], 40 + depth, x0), **pick(['flip', 'quantity', 'mini', 'miniBand', 'miniArcs'])}
+    return [panel, line, mini]
 
 
 W = []
@@ -126,8 +149,8 @@ HOLE = [560, 150, 800, 470]
 W.append({'id': 'cmap', 'type': 'cmap', 'class': 'content', 'z': 0, 'x': 0, 'y': 0, 'w': 1920, 'h': 660,
           'bars': [[round(v, 1) for v in (*T(a, b), *T(c, d))] for a, b, c, d in [(946, 378, 968, 383), (972, 380, 988, 385), (992, 382, 1008, 387), (1010, 383, 1022, 388), (1024, 385, 1036, 390)]],
           'hole': HOLE, 'holeWhen': 'mapUp', 'holeInset': 0, 'holeOval': 90})
-W.append(gauge('cview_l', 'left'))
-W.append(gauge('cview_r', 'right'))
+W.extend(gauge('_l', 'left'))
+W.extend(gauge('_r', 'right'))
 # the numbers, speed, mode and gear: placed on the white blobs found in the photo (tools/concept/measure_text.py)
 FONT_DIR = os.path.join(ROOT, 'apps', 'kurdbimmer_themes', 'hud', 'fonts')
 

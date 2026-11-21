@@ -2,7 +2,7 @@
   "id": "kurdbimmer_themes",
   "title": "KurdBimmer Themes",
   "description": "Seventeen full-screen cluster themes with a Kurdish (Sorani) interface. By FDX100. Needs cluster-render.",
-  "version": "0.24.2",
+  "version": "0.25.0",
   "vendor": "custom",
   "loggingId": "OAC1",
   "iconGlyph": "kurd",
@@ -38,7 +38,8 @@
     "hud_holiday.js",
     "garland.js",
     "png.js",
-    "logos.js"
+    "logos.js",
+    "ambient.js"
   ],
   "signals": {
     "de.bmw.infotainment.vehicle.CDS": {
@@ -613,6 +614,12 @@
     {
       "key": "mapInTheme",
       "label": "Show Waze map inside the theme",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "key": "ambientMatch",
+      "label": "Concept: match the ambient light colour",
       "type": "bool",
       "default": false
     },

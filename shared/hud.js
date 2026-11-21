@@ -92,6 +92,9 @@
  *   cview     effect layer; one of the Concept theme's gauges (shaders.js CVIEW, layout made by tools/gen_concept.py): "path"
  *             (the glossy line), "flip", "ticks", "swoosh" and "miniBand" (depth bands by arc length), "panel", "quantity"
  *             (speed | rpm), "steps" / "arcs" (value -> arc length), "miniArcs" (the little gauge's empty and full)
+ *   cline / cpanel / cmini   the same gauge cut into three effect layers for the iX3 (one shader each, shaders.js CVIEW_LINE, CVIEW_PANEL,
+ *             CVIEW_MINI): cline has "path", "flip", "lineW", "ticks", "swoosh", "underline", "steps" / "arcs", "quantity"; cpanel "panel",
+ *             "star", "starOrigin"; cmini "flip", "mini", "miniBand", "miniArcs", "quantity". Their blues take the ambient light's colour ("ambientMatch")
  *   eside     effect layer; a side gauge: a thin open arc with inward ticks and a floating radial needle (shaders.js ESIDE, the ePower theme): "center", "radius",
  *             "half", "start" / "sweep", "needle", "ticks", "block", "fill", "signal" with "min" / "max"
  *   wdial     effect layer; a white analog dial with a notched red scale line (shaders.js WDIAL, the E46 theme): "rings", "start" / "sweep", "notch", "inner",
@@ -310,6 +313,7 @@ const badges = require('./badges');
 const { Logos } = require('./logos');
 const { fit: pngFit } = require('./png');
 const Runs = require('./runs');
+const ambient = require('./ambient');
 const tz = require('./tz');
 const holidays = require('./holidays');
 const VehicleState = require('./vehicle_state');    // the switch-off guard: no new layer while the car switches off
@@ -329,6 +333,8 @@ const CLAIM_MS = 1000;
 
 const BOOST_SCALE = { factor: 0.01, offset: 0, invalid: 255 }; // see header comment
 // the widget types drawn as pixels (image layers, packed into sheets unless "own": true); the rest are shaders
+// the Concept gauge's effect types: cview is the whole gauge in one shader, cline / cpanel / cmini its three parts (one each)
+const CVIEW_TYPES = { cview: true, cline: true, cpanel: true, cmini: true };
 const IMAGE_TYPES = { badgemark: true, text: true, scale: true, stripe: true, badge: true, gridlabels: true, icon: true, swatchimg: true, nav: true, garland: true };
 const STATUS_ASK_MS = 2000;      // after a rebuild: ask cluster-render for its own status text
 // an image layer is "stalled" until its first pixels reach cluster-render, which after a rebuild takes a second or two
@@ -433,6 +439,8 @@ const HV_SOC = { ecu: 0x07, did: 'DDBC', bytes: 2, at: 0, factor: 0.1, offset: 0
 const FUEL_OBD = { obd: '2F', bytes: 1, at: 0, factor: 100 / 255, offset: 0, min: 0, max: 100, timeoutMs: 1000 };
 const FUEL_EVERY_MS = 10000, FUEL_RETRY_MS = 300000, FUEL_STALE_MS = 60000;
 const HV_EVERY_MS = 5000, HV_RETRY_MS = 60000, HV_STALE_MS = 20000;
+// the ambient light's colour (ambient.js): asked every 30 s while a Concept gauge shows, every 5 min when the car doesn't answer; a reading is good for 2 min
+const AMBIENT_EVERY_MS = 30000, AMBIENT_RETRY_MS = 300000, AMBIENT_STALE_MS = 120000;
 // BMW's speed scale: even steps to 120 mph (180 km/h), then wider ones to 200 mph (320 km/h)
 const SPEED_SCALE = { us: [0, 20, 40, 60, 80, 100, 120, 160, 200], metric: [0, 30, 60, 90, 120, 150, 180, 250, 320] };
 /** speed (display unit) -> 0..1 along a scale of evenly spaced labels */
@@ -989,6 +997,7 @@ class HudApp {
         if (this.target === 'hud') this.claimTimer = setInterval(() => this._guard('hud claim', () => this._hudClaim()), CLAIM_MS);
         this._status();
         this._startDme();
+        this._startAmbient();
         if (this.waze) { this.waze.start(); this._wazeWant(); }
         this.screen.start();
     }
@@ -1010,6 +1019,7 @@ class HudApp {
             const { ReadOnlyDiag } = require('./kit/readonly-diag');
             const { DidReader } = require('./kit/dids');
             const link = new ReadOnlyDiag(this.ctx.signals, this.log, { silentAfter: Infinity });
+            this.diagLink = link;         // the ambient light's colour goes over the same link (one request at a time)
             Promise.resolve().then(() => link.init()).catch((e) => this.log.info('engine unit link not available: ' + (e && e.message || e)));
             rd = new DidReader(link, { ecu: (dme && dme.ecu) || 18 });
         } catch (e) { this.log.info('engine unit boost off: ' + (e && e.message || e)); return; }
@@ -1060,12 +1070,45 @@ class HudApp {
         }), 400);
     }
 
+    /**
+     * The accent the Concept gauges draw their blues in (shaders.js CV_HEAD u_amb): the ambient light's colour while the
+     * "ambientMatch" setting is on and a reading is fresh, else [1, 1, 1, 0] (the blues as drawn).
+     */
+    _accent() {
+        const a = this.ambLight;
+        if (this.setting('ambientMatch') !== true || !a || Date.now() - a.at > AMBIENT_STALE_MS) return [1, 1, 1, 0];
+        return ambient.accent(a.rgb);
+    }
+
+    /** Ask the body controller for the ambient light's colour (ambient.js) while a Concept gauge shows and the setting is on. */
+    _startAmbient() {
+        let busy = false, ask = 0, miss = 0;
+        const fake = process.env.KB_AMBIENT ? process.env.KB_AMBIENT.split(',').map(Number) : null;   // bench: KB_AMBIENT=255,120,0
+        this.ambientTimer = setInterval(() => this._guard('ambient light', () => {
+            const now = Date.now();
+            if (this.setting('ambientMatch') !== true || !Array.from(this.widgets.values()).some((x) => x.w.type === 'cline')) return;
+            if (fake && fake.length === 3) { this.ambLight = { rgb: fake, at: now }; return; }
+            if (busy || !this.diagLink || this.car.data().demo || now - ask < (miss >= 3 ? AMBIENT_RETRY_MS : AMBIENT_EVERY_MS)) return;
+            busy = true; ask = now;
+            ambient.read(this.diagLink).then((rgb) => {
+                if (rgb === undefined) {
+                    if (++miss === 3) this.log.info('ambient light: the body controller gives no colour; asked again every 5 min');
+                    return;
+                }
+                if (miss >= 3 || !this.ambLight) this.log.info('ambient light: ' + (rgb ? 'colour ' + rgb.join(',') : 'off'));
+                miss = 0;
+                this.ambLight = { rgb, at: Date.now() };
+            }).catch((e) => this.log.info('ambient light: ' + (e && e.message || e))).then(() => { busy = false; });
+        }), 2000);
+    }
+
     stop() {
         clearTimeout(this.tickTimer);
         clearTimeout(this.restartT);
         clearInterval(this.themeTimer);
         clearInterval(this.statusTimer);
         clearInterval(this.dmeTimer);
+        clearInterval(this.ambientTimer);
         clearInterval(this.claimTimer);
         clearTimeout(this.statusAskT);
         clearTimeout(this.diagTimer); this.diagTimer = null;
@@ -2474,8 +2517,9 @@ class HudApp {
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_oval', [isNum(w.holeOval) ? w.holeOval : 0]);
             c.uniform(ref, 'u_bar', v4(w.bars, 6), { type: 'vec4' });
-        } else if (w.type === 'cview') {
-            // one of the Concept theme's gauges (shaders.js CVIEW): the line, its arc lengths, the swoosh bands, the panel (target px)
+        } else if (CVIEW_TYPES[w.type]) {
+            // one of the Concept theme's gauges (shaders.js CVIEW; on the iX3 cut into cline, cpanel and cmini, each with only its own uniforms): the line, its arc lengths, the swoosh bands, the panel (target px)
+            const part = (t) => w.type === 'cview' || w.type === t;
             const line4 = (path, n) => {
                 const o = []; let acc = 0;
                 path.slice(0, n).forEach((pt, i) => { if (i) acc += Math.hypot(pt[0] - path[i - 1][0], pt[1] - path[i - 1][1]); o.push(pt[0] - w.x, pt[1] - w.y, acc, 0); });
@@ -2485,21 +2529,29 @@ class HudApp {
             const pack = (a, n) => { const o = a.slice(0, n); while (o.length < n) o.push(0); return o; };
             const prof = (a, n) => { const o = []; a.slice(0, n).forEach((r) => o.push(r[0], r[1], r[2], 0)); while (o.length < n * 4) o.push(0); return o; };
             c.uniform(ref, 'u_size', [w.w, w.h]);
-            c.uniform(ref, 'u_flip', [w.flip]);
-            c.uniform(ref, 'u_path', line4(w.path, 24), { type: 'vec4' });
-            c.uniform(ref, 'u_n', [Math.min(24, w.path.length)]);
-            c.uniform(ref, 'u_lwS', w.lineW.map((r) => r[0]));
-            c.uniform(ref, 'u_lwW', w.lineW.map((r) => r[1]));
-            c.uniform(ref, 'u_tk', pack(w.ticks, 28), { type: 'vec4' });
-            c.uniform(ref, 'u_sw', prof(w.swoosh, 12), { type: 'vec4' });
-            c.uniform(ref, 'u_cn', [Math.min(12, w.swoosh.length), Math.min(36, w.panel.length), Math.min(12, w.mini.length), Math.min(14, w.miniBand.length)]);
-            const pp = []; w.panel.slice(0, 36).forEach((pt) => pp.push(pt[0] - w.x, pt[1] - w.y)); while (pp.length < 72) pp.push(0);
-            c.uniform(ref, 'u_pan', pp, { type: 'vec2' });
-            c.uniform(ref, 'u_mp', line4(w.mini, 12), { type: 'vec4' });
-            c.uniform(ref, 'u_msw', prof(w.miniBand, 14), { type: 'vec4' });
-            c.uniform(ref, 'u_ul', [w.underline[0] - w.x, w.underline[1] - w.x, w.underline[2] - w.y, w.underline[3]]);
-            c.uniform(ref, 'u_star', w.star);
-            c.uniform(ref, 'u_sorg', [w.starOrigin[0] - w.x, w.starOrigin[1] - w.y]);
+            if (w.type !== 'cview') c.uniform(ref, 'u_amb', this._accent());
+            if (part('cline') || part('cmini')) c.uniform(ref, 'u_flip', [w.flip]);
+            if (part('cline')) {
+                c.uniform(ref, 'u_path', line4(w.path, 24), { type: 'vec4' });
+                c.uniform(ref, 'u_n', [Math.min(24, w.path.length)]);
+                c.uniform(ref, 'u_lwS', w.lineW.map((r) => r[0]));
+                c.uniform(ref, 'u_lwW', w.lineW.map((r) => r[1]));
+                c.uniform(ref, 'u_tk', pack(w.ticks, 28), { type: 'vec4' });
+                c.uniform(ref, 'u_sw', prof(w.swoosh, 12), { type: 'vec4' });
+                c.uniform(ref, 'u_ul', [w.underline[0] - w.x, w.underline[1] - w.x, w.underline[2] - w.y, w.underline[3]]);
+            }
+            c.uniform(ref, 'u_cn', [Math.min(12, (w.swoosh || []).length), Math.min(36, (w.panel || []).length), Math.min(12, (w.mini || []).length), Math.min(14, (w.miniBand || []).length)]);
+            if (part('cpanel')) {
+                const pp = []; w.panel.slice(0, 36).forEach((pt) => pp.push(pt[0] - w.x, pt[1] - w.y)); while (pp.length < 72) pp.push(0);
+                c.uniform(ref, 'u_pan', pp, { type: 'vec2' });
+                c.uniform(ref, 'u_star', w.star);
+                c.uniform(ref, 'u_sorg', [w.starOrigin[0] - w.x, w.starOrigin[1] - w.y]);
+                c.uniform(ref, 'u_org', [w.x, w.y]);
+            }
+            if (part('cmini')) {
+                c.uniform(ref, 'u_mp', line4(w.mini, 12), { type: 'vec4' });
+                c.uniform(ref, 'u_msw', prof(w.miniBand, 14), { type: 'vec4' });
+            }
             // boxes the shader tests a pixel against before the costly parts (shaders.js CVIEW): the line plus its glow's reach
             // (190 px past the swoosh's depth, where it falls under 1/255), the panel, the little gauge plus its band
             const box = (a, pad) => {
@@ -2507,9 +2559,9 @@ class HudApp {
                 return [Math.min.apply(null, xs) - pad, Math.min.apply(null, ys) - pad, Math.max.apply(null, xs) + pad, Math.max.apply(null, ys) + pad];
             };
             const depth = (r) => r.reduce((m, e) => Math.max(m, Math.abs(e[1]), Math.abs(e[2])), 0);
-            c.uniform(ref, 'u_bb', box(w.path, 190 + depth(w.swoosh)));
-            c.uniform(ref, 'u_bbP', box(w.panel, 2));
-            c.uniform(ref, 'u_bbM', box(w.mini, 40 + depth(w.miniBand)));
+            if (part('cline')) c.uniform(ref, 'u_bb', box(w.path, 190 + depth(w.swoosh)));
+            if (part('cpanel')) c.uniform(ref, 'u_bbP', box(w.panel, 2));
+            if (part('cmini')) c.uniform(ref, 'u_bbM', box(w.mini, 40 + depth(w.miniBand)));
         } else if (w.type === 'lstrip') {
             // the Live Cockpit theme's bottom strip (shaders.js LSTRIP): the blue / red strip and the Waze map's window ("win", opened by "holeWhen")
             const v2 = (a, n) => { const o = []; (a || []).slice(0, n).forEach((pt) => o.push(pt[0] - w.x, pt[1] - w.y)); while (o.length < n * 2) o.push(0); return o; };
@@ -3554,7 +3606,7 @@ class HudApp {
             x.c.uniform(x.ref, 'u_sv', [svL, svR]);
             x.c.uniform(x.ref, 'u_np', [npL[0], npL[1], npR[0], npR[1]]);
             x.c.uniform(x.ref, 'u_sred', [arcAt(vals[2], w.ticksR)]);
-        } else if (w.type === 'cview') {
+        } else if (CVIEW_TYPES[w.type]) {
             // the gauge's value -> an arc length of its line through the numbers' own positions (not evenly spaced in value)
             const arcOf = (v, bp, arcs) => {
                 if (!(v > bp[0])) return arcs[0];
@@ -3562,21 +3614,26 @@ class HudApp {
                 return arcs[arcs.length - 1];
             };
             const frac = (v, a, b) => (isNum(v) ? Math.min(1, Math.max(0, (v - a) / (b - a))) : 0);
-            let main, mini;
-            if (w.quantity === 'speed') {
-                const us = this.setting('units') === 'us', sp = this._raw('speed');
-                main = arcOf(isNum(sp) ? (us ? sp * 0.621371 : sp) : 0, us ? w.steps.us : w.steps.metric, w.arcs);
-                mini = w.miniArcs[0] + frac(this._raw('fuel'), 0, 1) * (w.miniArcs[1] - w.miniArcs[0]);
-            } else {
-                const rpm = this._raw('rpm');
-                main = arcOf(isNum(rpm) ? rpm / 1000 : 0, w.steps, w.arcs);
-                mini = w.miniArcs[0] + frac(this._raw('coolant'), 50, 120) * (w.miniArcs[1] - w.miniArcs[0]);
+            const amb = w.type === 'cview' ? [] : this._accent();
+            let main = 0, mini = 0;
+            if (w.type !== 'cpanel') {
+                // cline has the line's "steps" / "arcs", cmini the little gauge's "miniArcs"; cview both
+                if (w.quantity === 'speed') {
+                    const us = this.setting('units') === 'us', sp = this._raw('speed');
+                    if (w.arcs) main = arcOf(isNum(sp) ? (us ? sp * 0.621371 : sp) : 0, us ? w.steps.us : w.steps.metric, w.arcs);
+                    if (w.miniArcs) mini = w.miniArcs[0] + frac(this._raw('fuel'), 0, 1) * (w.miniArcs[1] - w.miniArcs[0]);
+                } else {
+                    const rpm = this._raw('rpm');
+                    if (w.arcs) main = arcOf(isNum(rpm) ? rpm / 1000 : 0, w.steps, w.arcs);
+                    if (w.miniArcs) mini = w.miniArcs[0] + frac(this._raw('coolant'), 50, 120) * (w.miniArcs[1] - w.miniArcs[0]);
+                }
             }
             const vals = [main, mini].map((v) => Math.round(v * 2) / 2);
-            const key = vals.join('|');
+            const key = vals.join('|') + '|' + amb.join(',');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_val', [vals[0], vals[1], 0, 0]);
+            if (w.type !== 'cpanel') x.c.uniform(x.ref, 'u_val', [vals[0], vals[1], 0, 0]);
+            if (w.type !== 'cview') x.c.uniform(x.ref, 'u_amb', amb);
         } else if (w.type === 'lgauge') {
             // the band's cut: the value -> a row through the numbers' own positions (not evenly spaced in value); the bar's lit part
             const rows = (tbl, v) => {

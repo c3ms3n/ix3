@@ -27,7 +27,7 @@ mgu.run({
             title: ctx.spec.title, what: 'cluster',
             look: { name: 'Themes', style: 'hero', tags: { apex: 'twin dials', alpina: 'blue panels', concept: 'amber swooshes', live: 'blue + red', eco: 'ring dials', classic: 'analog dials', classic_map: 'analog + big map', night: 'dark and quiet', mdigital: 'curved rev bands', bluedials: 'blue dials', epower: 'plug-in hybrid', rain: 'green rain', neon: 'cyberpunk', glass: 'glass dials', e46: 'white dials', luxe: 'classic gold', hybrid: 'plug-in hybrids' } },
             tabs: ['look', 'readouts', 'badge', 'map', 'alerts', 'gmeter', 'settings', 'about'],
-            settings: ['units', 'clock', 'updateRate', 'timeZone', 'tankLitres', 'batteryKwh', 'redline', 'shiftBefore', 'coldGuard', 'showBoost', 'nightDim', 'cameraNotch', 'holiday', 'demo'],
+            settings: ['units', 'clock', 'updateRate', 'timeZone', 'tankLitres', 'batteryKwh', 'redline', 'shiftBefore', 'coldGuard', 'showBoost', 'nightDim', 'cameraNotch', 'holiday', 'ambientMatch', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
             modeCheck: ['HMI', 'MDrive', 'Engine', 'Sport2'],
         }).start();
